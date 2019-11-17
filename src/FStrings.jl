@@ -9,18 +9,23 @@ regex = r"(?<!\\)\{(.*?)(?::+?(.*?))?(?<!\\)\}"
 """
     @f_str(string::AbstractString)
 
-Loose implementation of `fstring` literal string interpolation as in Python.
+Loose implementation of Python style `fstring` literal string interpolation
+based on `Printf.@sprintf`.
 
 # Examples
 ```julia-repl
-using FStrings
+julia> using FStrings
 julia> f"π = {π:.2f}"
 "3.14"
 ```
 
-# References
+## Format specifiers
+Please refer to `Printf.@sprintf` for further details on the available
+format specifiers. Also refer to the principle syntax of `fstring` via PEP 498.
 
-- (PEP 498 -- Literal String Interpolation)[https://www.python.org/dev/peps/pep-0498/]
+# References
+- [`Printf.@sprintf`]: https://docs.julialang.org/en/v1/stdlib/Printf/#Printf.@sprintf
+- [PEP 498]: https://www.python.org/dev/peps/pep-0498/
 """
 macro f_str(string::AbstractString)
     new_string = ""
