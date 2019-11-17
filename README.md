@@ -8,7 +8,7 @@ based on [`Printf.@sprintf`][`Printf.@sprintf`].
 using FStrings
 
 julia> f"π = {π:.2f}"
-"3.14"
+"π = 3.14"
 
 julia> x = 30
 julia> f"0x{x+1:02x}"

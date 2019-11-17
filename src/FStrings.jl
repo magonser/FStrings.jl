@@ -16,10 +16,10 @@ based on `Printf.@sprintf`.
 ```julia-repl
 julia> using FStrings
 julia> f"π = {π:.2f}"
-"3.14"
+"π = 3.14"
 ```
 
-## Format specifiers
+# Format specifiers
 Please refer to `Printf.@sprintf` for further details on the available
 format specifiers. Also refer to the principle syntax of `fstring` via PEP 498.
 
