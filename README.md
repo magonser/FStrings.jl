@@ -4,8 +4,8 @@ Loose implementation of Python style [`fstring` literal string interpolation][PE
 based on [`Printf.@sprintf`][`Printf.@sprintf`].
 
 ## Usage Examples
-```julia-repl
-using FStrings
+```julia
+julia> using FStrings
 
 julia> f"π = {π:.2f}"
 "π = 3.14"
@@ -15,9 +15,10 @@ julia> f"0x{x+1:02x}"
 "0x1f"
 ```
 
-## Format specifiers
+## Format Specifiers
 Please refer to [`Printf.@sprintf`][`Printf.@sprintf`]
-for further details on the available format specifiers. Also refer to the principle syntax of
+for further details on the available format specifiers.
+Also refer to the principle syntax of
 [`fstring` literal string interpolation][PEP 498].
 
 

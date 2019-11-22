@@ -3,7 +3,16 @@ using Printf
 
 export @f_str
 
-regex = r"(?<!\\)\{(.*?)(?::+?(.*?))?(?<!\\)\}"
+# 0) Base version - has problems with `:` inside the Julia code section
+# regex = r"(?<!\\)\{(.*?)(?::+?(.*?))?(?<!\\)\}"
+# 1) Version that would require the Julia code section to escape `:` to `\:` inside {}
+# regex = r"(?<!\\)\{(.*?)(?:(?<!\\):+?(.*?))?(?<!\\)\}"
+# 2) Version that can keep normal `:` inside the Julia code, if there is one last `:` present as well
+# regex = r"(?<!\\)\{(.*?)(?::+?([^:\n\r]*?))?(?<!\\)\}"
+# 3) Version that can handle all cases by automatically matching only allowed format specifiers
+# regex = r"(?<!\\)\{(.*?)(?::([^:\n\r^\(^\)^\[^\]]*?))?(?<!\\)\}"
+# ...slightly improved matching:
+regex = r"(?<!\\)\{(.*?)(?::([^:\n\r\(\)\[\]]*?[^:\n\r\(\)\[\]\d]))?(?<!\\)\}"
 
 
 """
@@ -19,7 +28,7 @@ julia> f"π = {π:.2f}"
 "π = 3.14"
 ```
 
-# Format specifiers
+# Format Specifiers
 Please refer to `Printf.@sprintf` for further details on the available
 format specifiers. Also refer to the principle syntax of `fstring` via PEP 498.
 
