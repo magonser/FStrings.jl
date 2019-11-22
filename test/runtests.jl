@@ -15,4 +15,6 @@ using Test
     @test f"{[x^2 for x in 1:3]}" == "[1, 4, 9]"
     z = 11:13
     @test f"{z[2:end]}" == "12:13"
+    # Assert that proper errors are thrown, if format specifier is malformed.
+    @test_throws ArgumentError f"{0x2:02b}"  # Unfortunately bitfields are not supported
 end

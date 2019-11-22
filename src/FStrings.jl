@@ -14,6 +14,16 @@ export @f_str
 # ...slightly improved matching:
 regex = r"(?<!\\)\{(.*?)(?::([^:\n\r\(\)\[\]]*?[^:\n\r\(\)\[\]\d]))?(?<!\\)\}"
 
+# Taken from: https://github.com/JuliaLang/julia/blob/3608c84e6093594fe86923339fc315231492484c/stdlib/Printf/src/Printf.jl
+# printf specifiers:
+#   %                       # start
+#   (\d+\$)?                # arg (not supported)
+#   [\-\+#0' ]*             # flags
+#   (\d+)?                  # width
+#   (\.\d*)?                # precision
+#   (h|hh|l|ll|L|j|t|z|q)?  # modifier (ignored)
+#   [diouxXeEfFgGaAcCsSp%]  # conversion
+regex_valid_format_specifiers = r"^(\d+\$)?[\-\+#0' ]*(\d+)?(\.\d*)?(h|hh|l|ll|L|j|t|z|q)?[diouxXeEfFgGaAcCsSp%]$"
 
 """
     @f_str(string::AbstractString)
@@ -40,19 +50,27 @@ macro f_str(string::AbstractString)
     new_string = ""
     args = Any[]
     last_pos = 1
-    for (idx, match) = enumerate(eachmatch(regex, string))
-        new_string *= string[last_pos:match.offset-1]
-        last_pos = match.offset + length(match.match)
+    for (idx, match_) = enumerate(eachmatch(regex, string))
+        new_string *= string[last_pos:match_.offset-1]
+        last_pos = match_.offset + length(match_.match)
 
-        expr = match.captures[1]
+        expr = match_.captures[1]
         if length(expr) == 0
             @warn "Format string field without content present - skipping."
             continue
         end
-        if match.captures[2] === nothing
+        if match_.captures[2] === nothing
+            frmt = "s"
+        elseif match_.captures[2] == ""
             frmt = "s"
         else
-            frmt = match.captures[2]
+            frmt = match_.captures[2]
+        end
+        # *) Handle invalid format strings already here
+        if match(regex_valid_format_specifiers, frmt) === nothing
+            exc_txt = "invalid printf format string: \"$frmt\""
+            exc = :(throw(ArgumentError($exc_txt)))
+            return exc
         end
         new_string *= "%$frmt"
         push!(args, Meta.parse(expr))
@@ -61,6 +79,12 @@ macro f_str(string::AbstractString)
         new_string *= string[last_pos:end]
     end
 
+    # TODO: Didn't figure out how to escape this, such that
+    # `ArgumentErrors` are thrown in the outer scope _without_
+    # producing also a `LoadError` when there is a wrong format specifier.
+    # If this would work, *) can be removed.
+    # Keep in mind though, that `@sprintf` should be evaluated only once
+    # in the outside code for performance reasons.
     ex = :(@sprintf($new_string, $(esc.(args)...)))
     return ex
 end
