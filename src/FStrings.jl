@@ -28,14 +28,13 @@ regex_valid_format_specifiers = r"^(\d+\$)?[\-\+#0' ]*(\d+)?(\.\d*)?(h|hh|l|ll|L
 """
     @f_str(string::AbstractString)
 
-Loose implementation of Python style `fstring` literal string interpolation
-based on `Printf.@sprintf`.
+Python style `fstring` literal string interpolation based on `Printf.@sprintf`. 
 
 # Examples
 ```julia-repl
 julia> using FStrings
-julia> f"π = {π:.2f}"
-"π = 3.14"
+julia> f"π ≈ {π:.2f}"
+"π ≈ 3.14"
 ```
 
 # Format Specifiers
@@ -51,20 +50,29 @@ macro f_str(string::AbstractString)
     args = Any[]
     last_pos = 1
     for (idx, match_) = enumerate(eachmatch(regex, string))
-        new_string *= string[last_pos:match_.offset-1]
+        ext_string = string[last_pos:match_.offset-1]
+        ext_string = replace(ext_string, "%"=>"%%")
+        new_string *= ext_string
         last_pos = match_.offset + length(match_.match)
 
-        expr = match_.captures[1]
-        if length(expr) == 0
+        expr_txt = match_.captures[1]
+        if length(expr_txt) == 0
             @warn "Format string field without content present - skipping."
             continue
         end
-        if match_.captures[2] === nothing
+        expr = Meta.parse(expr_txt)  # Needs to be valid Julia code
+
+        frmt_txt = match_.captures[2]
+        if frmt_txt === nothing
             frmt = "s"
-        elseif match_.captures[2] == ""
+        elseif frmt_txt == ""
             frmt = "s"
-        else
-            frmt = match_.captures[2]
+        #elseif frmt_txt[end] == 'b'
+        # Potential extension for a binary format. Could use `bitstring` 
+        # to convert result of expr. Needs parsing of the leading `0`
+        # and bitwidth count. I.e. f"{123:b}", f"{123:8b}", f"{123:08b}"
+        else  
+            frmt = frmt_txt
         end
         # *) Handle invalid format strings already here
         if match(regex_valid_format_specifiers, frmt) === nothing
@@ -73,10 +81,13 @@ macro f_str(string::AbstractString)
             return exc
         end
         new_string *= "%$frmt"
-        push!(args, Meta.parse(expr))
+
+        push!(args, expr)
     end
     if last_pos <= length(string)
-        new_string *= string[last_pos:end]
+        ext_string = string[last_pos:end]
+        ext_string = replace(ext_string, "%"=>"%%")
+        new_string *= ext_string
     end
 
     # TODO: Didn't figure out how to escape this, such that
@@ -85,6 +96,7 @@ macro f_str(string::AbstractString)
     # If this would work, *) can be removed.
     # Keep in mind though, that `@sprintf` should be evaluated only once
     # in the outside code for performance reasons.
+    new_string = unescape_string(new_string)
     ex = :(@sprintf($new_string, $(esc.(args)...)))
     return ex
 end
