@@ -1,7 +1,7 @@
 name = "FStrings"
 uuid = "1e2663ae-5621-49ef-9c0a-672f85872094"
 authors = ["Markus Gonser"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
