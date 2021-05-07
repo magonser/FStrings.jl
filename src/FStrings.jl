@@ -28,7 +28,8 @@ regex_valid_format_specifiers = r"^(\d+\$)?[\-\+#0' ]*(\d+)?(\.\d*)?(h|hh|l|ll|L
 """
     @f_str(string::AbstractString)
 
-Python style `fstring` literal string interpolation based on `Printf.@sprintf`. 
+    Loose implementation of Python style `fstring` literal string interpolation 
+    based on `Printf.@sprintf`. 
 
 # Examples
 ```julia-repl
@@ -90,13 +91,16 @@ macro f_str(string::AbstractString)
         new_string *= ext_string
     end
 
+    # `macro f_str` received escape characters (e.g. `"\n"`) with the backslash
+    # escaped. Need to undo this before passing it on.
+    new_string = unescape_string(new_string)
+
     # TODO: Didn't figure out how to escape this, such that
     # `ArgumentErrors` are thrown in the outer scope _without_
     # producing also a `LoadError` when there is a wrong format specifier.
     # If this would work, *) can be removed.
     # Keep in mind though, that `@sprintf` should be evaluated only once
     # in the outside code for performance reasons.
-    new_string = unescape_string(new_string)
     ex = :(@sprintf($new_string, $(esc.(args)...)))
     return ex
 end

@@ -1,4 +1,4 @@
-# FStrings.jl
+# FStrings
 
 Loose implementation of Python style [`fstring` literal string interpolation][PEP 498]
 based on [`Printf.@sprintf`][`Printf.@sprintf`].
