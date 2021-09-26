@@ -12,6 +12,9 @@ using Test
     @test f"π ≈ {π:.4f}" == "π ≈ 3.1416"
     @test f"10π ≈ 0x{31:04x}" == "10π ≈ 0x001f"
 
+    # Test trivial case
+    @test f"" == ""
+
     # Test special characters
     # f_str macro receives escaped strings, which need to be unescaped:
     @test f"\n" == "\n"

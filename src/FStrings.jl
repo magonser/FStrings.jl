@@ -95,6 +95,12 @@ macro f_str(string::AbstractString)
     # escaped. Need to undo this before passing it on.
     new_string = unescape_string(new_string)
 
+    # In case `new_string` is empty, the `@sprintf` throws `LoadError`.
+    # Workaround for now:
+    if length(new_string) == 0
+        return new_string
+    end
+
     # TODO: Didn't figure out how to escape this, such that
     # `ArgumentErrors` are thrown in the outer scope _without_
     # producing also a `LoadError` when there is a wrong format specifier.
